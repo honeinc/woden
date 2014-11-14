@@ -1,0 +1,17 @@
+{
+  "name": "node-mixpanel-proxy",
+  "version": "1.0.0",
+  "description": "A proxy between mixpanels api and your client app:x",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Passing! jk\""
+  },
+  "keywords": [
+    "node"
+  ],
+  "author": "Jacob Lowe",
+  "license": "MIT",
+  "dependencies": {
+    "http-proxy": "^1.6.2"
+  }
+}
