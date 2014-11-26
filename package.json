@@ -4,7 +4,8 @@
   "description": "A proxy between mixpanels api and your client app:x",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Passing! jk\""
+    "test": "echo \"Passing! jk\"",
+    "start": "node index.js"
   },
   "keywords": [
     "node"
@@ -12,6 +13,7 @@
   "author": "Jacob Lowe",
   "license": "MIT",
   "dependencies": {
-    "http-proxy": "^1.6.2"
+    "http-proxy": "^1.6.2",
+    "tinycache": "^0.1.5"
   }
 }
