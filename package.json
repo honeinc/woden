@@ -1,5 +1,5 @@
 {
-  "name": "node-proxy-cache",
+  "name": "proxy-cache",
   "version": "1.1.0",
   "description": "A proxy that you can cache the calls between a server and here to avoid caching",
   "main": "index.js",
@@ -17,5 +17,9 @@
     "sha1": "^1.1.0",
     "sorted-object": "^1.0.0",
     "tinycache": "^0.1.5"
+  },
+  "repository": {
+    "type": "git",
+    "url": "http://github.com/honeinc/node-proxy-cache"
   }
 }
