@@ -48,6 +48,7 @@ function ProxyCache( options ) {
     this.proxy.on( 'proxyRes', this._onResponse.bind( this ) );
     this.proxy.on('proxyReq', this._onProxyReq.bind( this ) );
     this.storageAdapter = require( './src/store' );
+    this.proxy.on( 'error', this._onError.bind( this ) );
 }   
 
 util.inherits( ProxyCache, EventEmitter );
@@ -148,6 +149,9 @@ ProxyCache.prototype._onResponse = function( proxyRes, req, res ) {
 
     function cached( cache ) {
         return function ( err ) {
+            if ( err ) {
+                this._onError( err );
+            }
             if ( !err && settings.onCache ) {
                 self.emit( 'cached', cache );
                 settings.onCache( cache );
@@ -190,6 +194,15 @@ ProxyCache.prototype._onProxyReq = function( proxyReq, req ) {
         proxyReq.setHeader( key, headers[ key ] );
     }
 };
+
+ProxyCache.prototype._onError = function( error ) {
+    if( this.listeners('error').length === 1) {
+        throw err;
+    }
+    this.emit( 'error', error );
+};
+
+
 
 function getKey( path, payload ) {
     return sha1( path + ':' + qs.stringify( payload ) );
