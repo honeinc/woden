@@ -1,7 +1,7 @@
 {
-  "name": "node-mixpanel-proxy",
-  "version": "1.0.0",
-  "description": "A proxy between mixpanels api and your client app:x",
+  "name": "node-proxy-cache",
+  "version": "1.1.0",
+  "description": "A proxy that you can cache the calls between a server and here to avoid caching",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Passing! jk\"",
