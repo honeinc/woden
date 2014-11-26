@@ -13,7 +13,9 @@
   "author": "Jacob Lowe",
   "license": "MIT",
   "dependencies": {
-    "http-proxy": "^1.6.2",
+    "http-proxy": "^1.7.0",
+    "sha1": "^1.1.0",
+    "sorted-object": "^1.0.0",
     "tinycache": "^0.1.5"
   }
 }
