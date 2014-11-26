@@ -1,4 +1,3 @@
-
 /*
     
     Proxy Cache
@@ -35,7 +34,9 @@ var http = require( 'http' ),
     qs = require( 'querystring' ),
     util = require( 'util' ),
     EventEmitter = require( 'events' ).EventEmitter,
-    httpProxy = require( 'http-proxy' );
+    httpProxy = require( 'http-proxy' ),
+    sortObject = require( 'sorted-object' ),
+    sha1 = require( 'sha1' );
 
 module.exports = ProxyCache;
 
@@ -45,6 +46,7 @@ function ProxyCache( options ) {
     this.proxy = httpProxy.createProxyServer( options );
     this.server = http.createServer( this._onRequest.bind( this ) );
     this.proxy.on( 'proxyRes', this._onResponse.bind( this ) );
+    this.proxy.on('proxyReq', this._onProxyReq.bind( this ) );
     this.storageAdapter = require( './src/store' );
 }   
 
@@ -75,22 +77,45 @@ ProxyCache.prototype._onRequest = function( req, res ) {
         arg = req.url.split( '?' ),
         path = arg.shift( ),
         query = qs.parse( arg.pop( ) ),
-        url = query.$url,
+        url = query.$url || '',
         settings = this._getSettings( url ),
-        key = settings.getKey( path, query ),
+        key,
         self = this;
 
+    req._settings = settings;
+
     delete query.$url;
+    req.url = path + '?' + qs.stringify( query );
+
+    query = sortObject( query ); 
+    key = settings.getKey( path, query );
+
+    if ( req.method.toLowerCase() !== 'get' ) {
+        res.writeHead( 501 );
+        res.write( 'Methods that are not "GET" are not implemented in proxy cache' );
+        res.end( );
+        res.cache = true;
+        self.emit( 'reponse', res ); 
+        return;
+    }
+
+    if ( !/^(http|https):\/\//.test( url ) ) {
+        res.writeHead( 400 );
+        res.write( '$url query param requires a valid url to use proxy cache' );
+        res.end( );
+        res.cache = true;
+        self.emit( 'reponse', res ); 
+        return;
+    }
 
     req.on( 'data', function( data ) {
         payload += data.toString( data );
     });
 
-
     this.storageAdapter.get( key, function( err, cache ) {
 
         if ( cache && !err ) {
-            cache.headers.CACHE = 'HIT';
+            cache.headers[ 'cache-agent' ] = 'node-proxy-cache';
             res.writeHead( cache.statusCode, cache.headers );
             res.write( cache.body );
             res.end( );
@@ -102,7 +127,6 @@ ProxyCache.prototype._onRequest = function( req, res ) {
         self.proxy.web( req, res, { 
             target: url 
         } );
-
     } );
 
 };
@@ -114,18 +138,18 @@ ProxyCache.prototype._onResponse = function( proxyRes, req, res ) {
     var payload = '',
         arg = req.url.split( '?' ),
         path = arg.shift( ),
-        query = qs.parse( arg.pop( ) ),
+        query = sortObject( qs.parse( arg.pop( ) ) ),
         headers = proxyRes.headers,
         url = query.$url,
-        settings = this._getSettings( url ),
+        settings = req._settings,
         key = settings.getKey( path, query ),
         self = this,
         arr = [];
 
     function cached( cache ) {
         return function ( err ) {
-            self.emit( err, cache );
             if ( !err && settings.onCache ) {
+                self.emit( 'cached', cache );
                 settings.onCache( cache );
             }
         };
@@ -141,7 +165,6 @@ ProxyCache.prototype._onResponse = function( proxyRes, req, res ) {
             statusCode: proxyRes.statusCode,
             body: Buffer.concat( arr )
         };
-        
         self.storageAdapter.set( key, cache, cached( cache ) );
     } );
 };
@@ -159,6 +182,15 @@ ProxyCache.prototype._getSettings = function( url ) {
     }
 };
 
+ProxyCache.prototype._onProxyReq = function( proxyReq, req ) {
+    var settings = req._settings,
+        headers = req._settings.headers || {};
+
+    for ( var key in headers ) {
+        proxyReq.setHeader( key, headers[ key ] );
+    }
+};
+
 function getKey( path, payload ) {
-    return path + ':' + qs.stringify( payload );
+    return sha1( path + ':' + qs.stringify( payload ) );
 }
