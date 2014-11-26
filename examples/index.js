@@ -1,36 +1,23 @@
 var ProxyCache = require( '../' ),
     proxycache = new ProxyCache( {
-        output: process.stdout,
-        hostRewrite: true
+        output: process.stdout
     } ),
     DS = { };
 
-proxycache.on( 'request', function() {
-    console.log( 'request' );
-} );
-
-proxycache.on( 'response', function() {
-    console.log( 'response' );
-} );
-
-proxycache.on( 'cached', function() {
-    console.log( 'cached' );
-} );
-
-proxycache.when( /localhost:8000/, {
+proxycache.when( /mixpanel/, {
     getKey: function ( path, query ) {
-        console.log( 'get key' );
-        return 'dude';
+        return path + ':' + JSON.stringify( query );
+    },
+    headers : {
+        host: 'mixpanel.com'
     }
 } );
 
 proxycache.store({
     get: function( key, callback ) {
-        console.log( 'get data', key );
         callback( null, DS[ key ] );
     },
     set: function( key, value, callback ) {
-        console.log( 'set data', key );
         DS[ key ] = value;
         callback();
     }
