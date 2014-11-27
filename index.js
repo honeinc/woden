@@ -197,7 +197,7 @@ ProxyCache.prototype._onProxyReq = function( proxyReq, req ) {
 
 ProxyCache.prototype._onError = function( error ) {
     if( this.listeners('error').length === 1) {
-        throw err;
+        throw error;
     }
     this.emit( 'error', error );
 };
