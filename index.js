@@ -5,29 +5,6 @@
     proxy cache is a module that allows you to run a proxy server that 
     will cache request.
 
-    ```javascript
-    var proxyCache = require( 'proxy-cache' );
-
-    // rules for specific urls V regex to test url
-    proxyCache.when( /mixpanel.com\/api/, { // when first is hit break loop
-        getKey: function( url, query ) { } // gets fired on both request and
-        ... // object to allow for more settings to be set in future
-    } );
-
-    // adapter for storing the cache
-    proxyCache.store( { // the store adapter
-        get: function( key, callback ) { },
-        set: function( key, value, callback ) { }
-    } );
-
-    // basic event emitters
-    proxyCache.on( 'request' , Function );
-    proxyCache.on( 'response' , Function );
-    proxyCache.on( 'cached' , Function );
-
-    // listent to a port
-    proxyCache.listen( PORT );
-    ```
 */
 
 var http = require( 'http' ),
@@ -36,9 +13,21 @@ var http = require( 'http' ),
     EventEmitter = require( 'events' ).EventEmitter,
     httpProxy = require( 'http-proxy' ),
     sortObject = require( 'sorted-object' ),
-    sha1 = require( 'sha1' );
+    sha1 = require( 'sha1' ),
+    pkg = require( './package.json' );
 
 module.exports = ProxyCache;
+
+/*
+    ProxyCache::Constructor 
+    
+    params
+        options { Object } - set some base configuration, also gets passed to `http-proxy`
+
+    returns
+        instance
+
+*/
 
 function ProxyCache( options ) {
     this.options = options || {};
@@ -51,16 +40,42 @@ function ProxyCache( options ) {
     this.proxy.on( 'error', this._onError.bind( this ) );
 }   
 
+// inherit Event Emitter
 util.inherits( ProxyCache, EventEmitter );
+
+
+/*
+    ProxyCache::when - allows for custom settings `when` url proxy is requested
+
+    params 
+        regexp { RegExp } - pattern to match against the request param $url
+        settings { Object } - an object with some common settings
+*/
 
 ProxyCache.prototype.when = function( regexp, settings ) {
     this.settings.push( [ regexp, settings ] );
 };
 
+/*
+    ProxyCache::store - Allows a custom storageAdapter
+
+    params
+        adapter { Object } - an object that has the methods `get` and `set`
+
+*/
+
 ProxyCache.prototype.store = function( adapter ) {
     // maybe do som testing before setting adapter
     this.storageAdapter = adapter;
 };
+
+/*
+    ProxyCache::listen - Allows a custom port
+
+    params
+        port { Number } - port to listen proxy server on 
+
+*/
 
 ProxyCache.prototype.listen = function( port ) {
     var port = port || 5050;
@@ -69,6 +84,15 @@ ProxyCache.prototype.listen = function( port ) {
     }
     this.server.listen( port );
 };
+
+/*
+    ProxyCache::_onRequest - Private handler of incoming request
+
+    params
+        req { Request } - node request object
+        res { Response } - node response object 
+
+*/
 
 ProxyCache.prototype._onRequest = function( req, res ) {
 
@@ -91,6 +115,7 @@ ProxyCache.prototype._onRequest = function( req, res ) {
     query = sortObject( query ); 
     key = settings.getKey( path, query );
 
+    // right now only get request are supported
     if ( req.method.toLowerCase() !== 'get' ) {
         res.writeHead( 501 );
         res.write( 'Methods that are not "GET" are not implemented in proxy cache' );
@@ -100,6 +125,7 @@ ProxyCache.prototype._onRequest = function( req, res ) {
         return;
     }
 
+    // test for a proper url
     if ( !/^(http|https):\/\//.test( url ) ) {
         res.writeHead( 400 );
         res.write( '$url query param requires a valid url to use proxy cache' );
@@ -116,7 +142,8 @@ ProxyCache.prototype._onRequest = function( req, res ) {
     this.storageAdapter.get( key, function( err, cache ) {
 
         if ( cache && !err ) {
-            cache.headers[ 'cache-agent' ] = 'node-proxy-cache';
+            // add header to signify a cache hit
+            cache.headers[ 'cache-agent' ] = pkg.name;
             res.writeHead( cache.statusCode, cache.headers );
             res.write( cache.body );
             res.end( );
@@ -131,6 +158,16 @@ ProxyCache.prototype._onRequest = function( req, res ) {
     } );
 
 };
+
+/*
+    ProxyCache::_onReponse - Private handler of response from proxy
+
+    params
+        proxyRes { Response } - node response object from proxy 
+        req { Request } - node request object
+        res { Response } - node response object 
+
+*/
 
 ProxyCache.prototype._onResponse = function( proxyRes, req, res ) {
     
@@ -173,6 +210,14 @@ ProxyCache.prototype._onResponse = function( proxyRes, req, res ) {
     } );
 };
 
+/*
+    ProxyCache::_getSettings - Private utility to grab the current url's setting
+
+    params
+        url { String } - url that proxy is going to be requesting 
+
+*/
+
 ProxyCache.prototype._getSettings = function( url ) {
     var settings;
     for( var i = 0; i < this.settings.length; i += 1 ) {
@@ -186,6 +231,15 @@ ProxyCache.prototype._getSettings = function( url ) {
     }
 };
 
+/*
+    ProxyCache::_onProxyReq - Private handler of request pre proxy
+
+    params
+        proxyRes { Request } - node request object for proxy 
+        req { Request } - node request object
+
+*/
+
 ProxyCache.prototype._onProxyReq = function( proxyReq, req ) {
     var settings = req._settings,
         headers = req._settings.headers || {};
@@ -195,6 +249,14 @@ ProxyCache.prototype._onProxyReq = function( proxyReq, req ) {
     }
 };
 
+/*
+    ProxyCache::_onError - Private handler of errors
+
+    params
+        error { Error } - error object ( not a string ) 
+
+*/
+
 ProxyCache.prototype._onError = function( error ) {
     if( this.listeners('error').length === 1) {
         throw error;
@@ -202,7 +264,14 @@ ProxyCache.prototype._onError = function( error ) {
     this.emit( 'error', error );
 };
 
+/*
+    getKey - Utility for default key
 
+    params
+        path { String } - the path of the request
+        payload { Object } - query object from initial request 
+
+*/
 
 function getKey( path, payload ) {
     return sha1( path + ':' + qs.stringify( payload ) );
