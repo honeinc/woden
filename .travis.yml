@@ -1,0 +1,8 @@
+language: node_js
+node_js:
+    - "0.10"
+    - "0.11"
+notifications:
+    slack:
+        rooms:
+            - gohone:k6kkTNlonb8PrSUb890lrpC5#tech
