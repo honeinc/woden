@@ -1,4 +1,4 @@
-# Node Mixpanel Proxy
+# Node Proxy Cache [![Build Status](https://travis-ci.org/honeinc/node-proxy-cache.svg?branch=master)](https://travis-ci.org/honeinc/node-proxy-cache)
 
 proxy cache is a module that allows you to run a proxy server that will cache request.
 
