@@ -4,7 +4,7 @@
   "description": "A proxy that you can cache the calls between a server and here to avoid caching",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Passing! jk\"",
+    "test": "tape test/*",
     "start": "node index.js"
   },
   "keywords": [
