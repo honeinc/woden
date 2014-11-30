@@ -30,4 +30,17 @@ test( 'testing proxyCache::when', function ( t ) {
     t.equals( proxyCache.settings[ 0 ][ 0 ] instanceof RegExp, true, 'first param is a Regular Expression' );
     t.equals( typeof proxyCache.settings[ 0 ][ 1 ], 'object', 'second param is an object' );
     t.end();
-} )
+} );
+
+test( 'testing proxyCache::store', function( t ) {
+    var proxyCache = new ProxyCache( { foo: 'bar' } );
+
+    t.equals( typeof proxyCache.storageAdapter, 'object', 'proxyCache.storageAdapter is a object' );
+    t.equals( typeof proxyCache.store, 'function', 'proxyCache.store is a function' );
+
+    proxyCache.store({ baz : 'qux' });
+    t.equals( typeof proxyCache.storageAdapter, 'object', 'proxyCache.storageAdapter is a object' );
+    t.equals( proxyCache.storageAdapter.baz, 'qux', 'proxyCache.storageAdapter now has the properties of the object passed in to store' );
+
+    t.end();
+});
