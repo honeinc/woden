@@ -2,11 +2,13 @@
 
 ![Woden](https://cloud.githubusercontent.com/assets/273857/5469053/e6c140a2-858b-11e4-97b1-ee4c1a39d352.png)
 
-Woden is a module that allows you to run a proxy server that will cache request.
+Woden is a small, simple proxy server module with some nice controls for caching.
+
+Its name comes from the Germanic god Woden's traditional role as the [leader of the Wild Hunt](http://en.wikipedia.org/wiki/W%C5%8Dden#Medieval_and_early_modern_folklore).
 
 ## Install 
 
-    $ npm install node-proxy-cache
+    $ npm install woden
     
 ## Usage
 

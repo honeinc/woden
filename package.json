@@ -1,7 +1,7 @@
 {
   "name": "woden",
-  "version": "1.3.0",
-  "description": "A proxy that you can cache the calls between a server and here to avoid caching",
+  "version": "1.3.1",
+  "description": "A small, simple proxy server module with some nice controls for caching.",
   "main": "index.js",
   "scripts": {
     "test": "jshint index.js src/*.js && tape test/*",
@@ -21,7 +21,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "http://github.com/honeinc/node-proxy-cache"
+    "url": "http://github.com/honeinc/woden"
   },
   "devDependencies": {
     "jshint": "^2.5.11",
