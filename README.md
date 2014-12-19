@@ -2,7 +2,7 @@
 
 ![Woden](https://cloud.githubusercontent.com/assets/273857/5469053/e6c140a2-858b-11e4-97b1-ee4c1a39d352.png)
 
-proxy cache is a module that allows you to run a proxy server that will cache request.
+Woden is a module that allows you to run a proxy server that will cache request.
 
 ## Install 
 
@@ -11,11 +11,11 @@ proxy cache is a module that allows you to run a proxy server that will cache re
 ## Usage
 
 ```javascript
-var ProxyCache = require( 'node-proxy-cache' ),
-    proxyCache = new ProxyCache({}),
+var Woden = require( 'woden' ),
+    woden = new Woden({}),
     DS = {};
     
-proxyCache.when( /google/, {
+woden.when( /google/, {
     getKey: function( path, query ) { // allows you to generate keys
         return 'foo:' + path; 
     },
@@ -25,7 +25,7 @@ proxyCache.when( /google/, {
     caching: false // don't cache responses from google
 });
 
-proxyCache.when( /foo.org/, {
+woden.when( /foo.org/, {
     cacheTime: function( cacheEntry, req, proxyRes ) {
         if ( cacheEntry.body.length > 10000000 ) {
             return -1; // don't cache big responses
@@ -43,7 +43,7 @@ proxyCache.when( /foo.org/, {
     }  
 });
 
-proxyCache.store({ // custom storeAdapter
+woden.store({ // custom storeAdapter
     get: function( key, callback ) {
         callback( null, DS[key] ); // getting information
     },
@@ -53,7 +53,7 @@ proxyCache.store({ // custom storeAdapter
     }
 });
 
-proxy.listen( 9000 ); // listen on port
+woden.listen( 9000 ); // listen on port
 ```
 
 ##### Hitting server

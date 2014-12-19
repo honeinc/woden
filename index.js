@@ -20,10 +20,10 @@ var http = require( 'http' ),
     urlParse = require( 'url' ).parse,
     pkg = require( './package.json' );
 
-module.exports = ProxyCache;
+module.exports = Woden;
 
 /*
-    ProxyCache::Constructor 
+    Woden::Constructor 
     
     params
         options { Object } - set some base configuration, also gets passed to `http-proxy`
@@ -33,7 +33,7 @@ module.exports = ProxyCache;
 
 */
 
-function ProxyCache( options ) {
+function Woden( options ) {
     this.options = options || {};
     this.settings = [];
     this.proxy = httpProxy.createProxyServer( options );
@@ -46,43 +46,43 @@ function ProxyCache( options ) {
 }   
 
 // inherit Event Emitter
-util.inherits( ProxyCache, EventEmitter );
+util.inherits( Woden, EventEmitter );
 
 
 /*
-    ProxyCache::when - allows for custom settings `when` url proxy is requested
+    Woden::when - allows for custom settings `when` url proxy is requested
 
     params 
         regexp { RegExp } - pattern to match against the request param $url
         settings { Object } - an object with some common settings
 */
 
-ProxyCache.prototype.when = function( regexp, settings ) {
+Woden.prototype.when = function( regexp, settings ) {
     this.settings.push( [ regexp, settings ] );
 };
 
 /*
-    ProxyCache::store - Allows a custom storageAdapter
+    Woden::store - Allows a custom storageAdapter
 
     params
         adapter { Object } - an object that has the methods `get` and `set`
 
 */
 
-ProxyCache.prototype.store = function( adapter ) {
+Woden.prototype.store = function( adapter ) {
     // maybe do som testing before setting adapter
     this.storageAdapter = adapter;
 };
 
 /*
-    ProxyCache::listen - Allows a custom port
+    Woden::listen - Allows a custom port
 
     params
         port { Number } - port to listen proxy server on 
 
 */
 
-ProxyCache.prototype.listen = function( port ) {
+Woden.prototype.listen = function( port ) {
     port = port || 5050;
     if ( this.options.output ) {
         this.options.output.write( 'listening on port ' + port ); // assumes its a writable stream
@@ -91,7 +91,7 @@ ProxyCache.prototype.listen = function( port ) {
 };
 
 /*
-    ProxyCache::_onRequest - Private handler of incoming request
+    Woden::_onRequest - Private handler of incoming request
 
     params
         req { Request } - node request object
@@ -99,7 +99,7 @@ ProxyCache.prototype.listen = function( port ) {
 
 */
 
-ProxyCache.prototype._onRequest = function( req, res ) {
+Woden.prototype._onRequest = function( req, res ) {
 
     this.emit( 'request', req );
 
@@ -166,7 +166,7 @@ ProxyCache.prototype._onRequest = function( req, res ) {
 };
 
 /*
-    ProxyCache::_cacheResponse - Private caching handler
+    Woden::_cacheResponse - Private caching handler
 
     params
         proxyRes { Response } - node response object from proxy 
@@ -175,7 +175,7 @@ ProxyCache.prototype._onRequest = function( req, res ) {
 
 */
 
-ProxyCache.prototype._cacheResponse = function( proxyRes, req ) {
+Woden.prototype._cacheResponse = function( proxyRes, req ) {
 
     if ( !req._settings.caching ) {
         return;
@@ -222,14 +222,14 @@ ProxyCache.prototype._cacheResponse = function( proxyRes, req ) {
 };
 
 /*
-    ProxyCache::_getSettings - Private utility to grab the current url's setting
+    Woden::_getSettings - Private utility to grab the current url's setting
 
     params
         url { String } - url that proxy is going to be requesting 
 
 */
 
-ProxyCache.prototype._getSettings = function( url ) {
+Woden.prototype._getSettings = function( url ) {
     var settings;
     for( var i = 0; i < this.settings.length; ++i ) {
         var curSettings = this.settings[ i ];
@@ -247,7 +247,7 @@ ProxyCache.prototype._getSettings = function( url ) {
 };
 
 /*
-    ProxyCache::_onProxyReq - Private handler of request pre proxy
+    Woden::_onProxyReq - Private handler of request pre proxy
 
     params
         proxyRes { Request } - node request object for proxy 
@@ -255,7 +255,7 @@ ProxyCache.prototype._getSettings = function( url ) {
 
 */
 
-ProxyCache.prototype._onProxyReq = function( proxyReq, req ) {
+Woden.prototype._onProxyReq = function( proxyReq, req ) {
     var headers = req._settings.headers || {};
 
     for ( var key in headers ) {
@@ -269,14 +269,14 @@ ProxyCache.prototype._onProxyReq = function( proxyReq, req ) {
 };
 
 /*
-    ProxyCache::_onError - Private handler of errors
+    Woden::_onError - Private handler of errors
 
     params
         error { Error } - error object ( not a string ) 
 
 */
 
-ProxyCache.prototype._onError = function( error ) {
+Woden.prototype._onError = function( error ) {
     this.emit( 'error', error );
 };
 
