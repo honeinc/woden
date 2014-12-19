@@ -217,7 +217,7 @@ Woden.prototype._cacheResponse = function( proxyRes, req ) {
             return;
         }
         
-        self.storageAdapter.set( key, cache, cacheTime, cached( cache ) );
+        self.storageAdapter.set( key, cache, cached( cache ), cacheTime );
     } );
 };
 

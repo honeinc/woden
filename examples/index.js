@@ -1,3 +1,4 @@
+
 'use strict';
 
 var ProxyCache = require( '../' ),
@@ -44,7 +45,7 @@ proxycache.store({
     get: function( key, callback ) {
         callback( null, DS[ key ] );
     },
-    set: function( key, value, cacheTime, callback ) {
+    set: function( key, value, callback, cacheTime ) {
         DS[ key ] = value;
         if ( cacheTime > 0 ) {
             setTimeout( function() {
