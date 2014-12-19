@@ -1,6 +1,6 @@
 {
   "name": "node-proxy-cache",
-  "version": "1.2.1",
+  "version": "1.3.0",
   "description": "A proxy that you can cache the calls between a server and here to avoid caching",
   "main": "index.js",
   "scripts": {
@@ -14,6 +14,7 @@
   "license": "MIT",
   "dependencies": {
     "http-proxy": "^1.7.0",
+    "node.extend": "^1.1.3",
     "sha1": "^1.1.0",
     "sorted-object": "^1.0.0",
     "tinycache": "^0.1.5"

@@ -15,20 +15,39 @@ var ProxyCache = require( 'node-proxy-cache' ),
     
 proxyCache.when( /google/, {
     getKey: function( path, query ) { // allows you to generate keys
-      return 'foo:' + path; 
+        return 'foo:' + path; 
     },
     headers: {
         'X-Bar': 'Baz' // set custom headers when sending to proxy
-    }
+    },
+    caching: false // don't cache responses from google
+});
+
+proxyCache.when( /foo.org/, {
+    cacheTime: function( cacheEntry, req, proxyRes ) {
+        if ( cacheEntry.body.length > 10000000 ) {
+            return -1; // don't cache big responses
+        }
+
+        if ( req.url.match( /bar/) ) {
+            return 0; // cache bar stuff forever
+        }
+
+        if ( proxyRes.statusCode === 404 ) {
+            return -1; // don't cache 404 responses
+        }
+
+        return 10000; // only cache for 10 seconds
+    }  
 });
 
 proxyCache.store({ // custom storeAdapter
     get: function( key, callback ) {
-      callback( null, DS[key] ); // getting information
+        callback( null, DS[key] ); // getting information
     },
     set: function( key, value, callback ) { // setting values to store
-      DS[ key ] = value; // value.body is a buffer 
-      callback( );
+        DS[ key ] = value; // value.body is a buffer 
+        callback( );
     }
 });
 

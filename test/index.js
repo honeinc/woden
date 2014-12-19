@@ -1,3 +1,5 @@
+'use strict';
+
 var test = require( 'tape' ),
     ProxyCache = require( '../' );
 
@@ -11,7 +13,7 @@ test( 'testing the constructor', function( t ) {
     t.equals( typeof proxyCache.store, 'function', 'proxyCache.store is a function');
     t.equals( typeof proxyCache.listen, 'function', 'proxyCache.listen is a function');
     t.equals( typeof proxyCache._onRequest, 'function', 'proxyCache._onRequest is a function');
-    t.equals( typeof proxyCache._onResponse, 'function', 'proxyCache._onResponse is a function');
+    t.equals( typeof proxyCache._cacheResponse, 'function', 'proxyCache._cacheResponse is a function');
     t.equals( typeof proxyCache._getSettings, 'function', 'proxyCache._getSettings is a function');
     t.equals( typeof proxyCache._onProxyReq, 'function', 'proxyCache._onProxyReq is a function');
     t.equals( typeof proxyCache._onError, 'function', 'proxyCache._onError is a function');

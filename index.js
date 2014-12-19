@@ -1,3 +1,5 @@
+'use strict';
+
 /*
     
     Proxy Cache
@@ -10,10 +12,12 @@
 var http = require( 'http' ),
     qs = require( 'querystring' ),
     util = require( 'util' ),
+    extend = require( 'node.extend' ),
     EventEmitter = require( 'events' ).EventEmitter,
     httpProxy = require( 'http-proxy' ),
     sortObject = require( 'sorted-object' ),
     sha1 = require( 'sha1' ),
+    urlParse = require( 'url' ).parse,
     pkg = require( './package.json' );
 
 module.exports = ProxyCache;
@@ -34,8 +38,9 @@ function ProxyCache( options ) {
     this.settings = [];
     this.proxy = httpProxy.createProxyServer( options );
     this.server = http.createServer( this._onRequest.bind( this ) );
-    this.proxy.on( 'proxyRes', this._onResponse.bind( this ) );
-    this.proxy.on('proxyReq', this._onProxyReq.bind( this ) );
+    this.proxy.on( 'proxyRes', this.emit.bind( this, 'response' ) );
+    this.proxy.on( 'proxyRes', this._cacheResponse.bind( this ) ); // optionally caches response
+    this.proxy.on( 'proxyReq', this._onProxyReq.bind( this ) );
     this.storageAdapter = require( './src/store' );
     this.proxy.on( 'error', this._onError.bind( this ) );
 }   
@@ -78,7 +83,7 @@ ProxyCache.prototype.store = function( adapter ) {
 */
 
 ProxyCache.prototype.listen = function( port ) {
-    var port = port || 5050;
+    port = port || 5050;
     if ( this.options.output ) {
         this.options.output.write( 'listening on port ' + port ); // assumes its a writable stream
     }
@@ -103,17 +108,18 @@ ProxyCache.prototype._onRequest = function( req, res ) {
         path = arg.shift( ),
         query = qs.parse( arg.pop( ) ),
         url = query.$url || '',
-        settings = this._getSettings( url ),
         key,
         self = this;
 
+    delete query.$url;
+    req.url = path + ( Object.keys( query ).length ? ( '?' + qs.stringify( query ) ) : '' );
+    req._url = url;
+    
+    var settings = this._getSettings( url + req.url );
     req._settings = settings;
 
-    delete query.$url;
-    req.url = path + '?' + qs.stringify( query );
-
     query = sortObject( query ); 
-    key = settings.getKey( path, query );
+    key = settings.getKey( url + req.url, query );
 
     // right now only get request are supported
     if ( req.method.toLowerCase() !== 'get' ) {
@@ -160,7 +166,7 @@ ProxyCache.prototype._onRequest = function( req, res ) {
 };
 
 /*
-    ProxyCache::_onReponse - Private handler of response from proxy
+    ProxyCache::_cacheResponse - Private caching handler
 
     params
         proxyRes { Response } - node response object from proxy 
@@ -169,18 +175,17 @@ ProxyCache.prototype._onRequest = function( req, res ) {
 
 */
 
-ProxyCache.prototype._onResponse = function( proxyRes, req, res ) {
-    
-    this.emit( 'response', proxyRes );
+ProxyCache.prototype._cacheResponse = function( proxyRes, req ) {
 
-    var payload = '',
-        arg = req.url.split( '?' ),
-        path = arg.shift( ),
+    if ( !req._settings.caching ) {
+        return;
+    }
+    
+    var arg = req.url.split( '?' ),
         query = sortObject( qs.parse( arg.pop( ) ) ),
         headers = proxyRes.headers,
-        url = query.$url,
         settings = req._settings,
-        key = settings.getKey( path, query ),
+        key = settings.getKey( req._url + req.url, query ),
         self = this,
         arr = [];
 
@@ -206,7 +211,13 @@ ProxyCache.prototype._onResponse = function( proxyRes, req, res ) {
             statusCode: proxyRes.statusCode,
             body: Buffer.concat( arr )
         };
-        self.storageAdapter.set( key, cache, cached( cache ) );
+
+        var cacheTime = settings.cacheTime( cache, req, proxyRes );
+        if ( cacheTime < 0 ) {
+            return;
+        }
+        
+        self.storageAdapter.set( key, cache, cacheTime, cached( cache ) );
     } );
 };
 
@@ -220,15 +231,19 @@ ProxyCache.prototype._onResponse = function( proxyRes, req, res ) {
 
 ProxyCache.prototype._getSettings = function( url ) {
     var settings;
-    for( var i = 0; i < this.settings.length; i += 1 ) {
-        settings = this.settings[ i ];
-        if ( Array.isArray( settings ) && settings[ 0 ].test( url ) && settings[ 1 ] ) {
-            return settings[ 1 ];
+    for( var i = 0; i < this.settings.length; ++i ) {
+        var curSettings = this.settings[ i ];
+        if ( Array.isArray( curSettings ) && curSettings[ 0 ].test( url ) && curSettings[ 1 ] ) {
+            settings = curSettings[ 1 ];
         }
     } 
-    return {
-        getKey: getKey
-    }
+    return extend( true, {}, {
+        getKey: getKey,
+        caching: true,
+        cacheTime: function() {
+            return 3600000; // default to an hour
+        }
+    }, settings );
 };
 
 /*
@@ -241,11 +256,15 @@ ProxyCache.prototype._getSettings = function( url ) {
 */
 
 ProxyCache.prototype._onProxyReq = function( proxyReq, req ) {
-    var settings = req._settings,
-        headers = req._settings.headers || {};
+    var headers = req._settings.headers || {};
 
     for ( var key in headers ) {
         proxyReq.setHeader( key, headers[ key ] );
+    }
+    
+    if ( !headers.host ) {
+        var parsed = urlParse( req._url, false, true );
+        proxyReq.setHeader( 'host', parsed.host );
     }
 };
 
@@ -258,9 +277,6 @@ ProxyCache.prototype._onProxyReq = function( proxyReq, req ) {
 */
 
 ProxyCache.prototype._onError = function( error ) {
-    if( this.listeners('error').length === 1) {
-        throw error;
-    }
     this.emit( 'error', error );
 };
 
@@ -268,11 +284,11 @@ ProxyCache.prototype._onError = function( error ) {
     getKey - Utility for default key
 
     params
-        path { String } - the path of the request
+        url { String } - the full target url of the request
         payload { Object } - query object from initial request 
 
 */
 
-function getKey( path, payload ) {
-    return sha1( path + ':' + qs.stringify( payload ) );
+function getKey( url, payload ) {
+    return sha1( url + ':' + qs.stringify( payload ) );
 }
