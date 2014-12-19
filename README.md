@@ -1,4 +1,6 @@
-# Node Proxy Cache [![Build Status](https://travis-ci.org/honeinc/node-proxy-cache.svg?branch=master)](https://travis-ci.org/honeinc/node-proxy-cache)
+# Woden [![Build Status](https://travis-ci.org/honeinc/node-proxy-cache.svg?branch=master)](https://travis-ci.org/honeinc/node-proxy-cache)
+
+![Woden](https://cloud.githubusercontent.com/assets/273857/5469053/e6c140a2-858b-11e4-97b1-ee4c1a39d352.png)
 
 proxy cache is a module that allows you to run a proxy server that will cache request.
 
