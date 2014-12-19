@@ -4,7 +4,7 @@
   "description": "A proxy that you can cache the calls between a server and here to avoid caching",
   "main": "index.js",
   "scripts": {
-    "test": "tape test/*",
+    "test": "jshint index.js src/*.js && tape test/*",
     "start": "node index.js"
   },
   "keywords": [
@@ -24,6 +24,7 @@
     "url": "http://github.com/honeinc/node-proxy-cache"
   },
   "devDependencies": {
+    "jshint": "^2.5.11",
     "tape": "^3.0.3"
   }
 }

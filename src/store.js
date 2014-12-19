@@ -1,3 +1,4 @@
+'use strict';
 
 var TinyCache = require( 'tinycache' ),
     tinycache = new TinyCache( );
