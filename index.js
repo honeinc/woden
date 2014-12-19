@@ -212,12 +212,16 @@ Woden.prototype._cacheResponse = function( proxyRes, req ) {
             body: Buffer.concat( arr )
         };
 
-        var cacheTime = settings.cacheTime( cache, req, proxyRes );
-        if ( cacheTime < 0 ) {
+        var timeout = settings.cacheTimeout( cache, req, proxyRes );
+        if ( timeout < 0 ) {
             return;
         }
         
-        self.storageAdapter.set( key, cache, cached( cache ), cacheTime );
+        self.storageAdapter.set( {
+            key: key,
+            value: cache,
+            timeout: timeout
+        }, cached( cache ) );
     } );
 };
 
@@ -240,7 +244,7 @@ Woden.prototype._getSettings = function( url ) {
     return extend( true, {}, {
         getKey: getKey,
         caching: true,
-        cacheTime: function() {
+        cacheTimeout: function() {
             return 3600000; // default to an hour
         }
     }, settings );
