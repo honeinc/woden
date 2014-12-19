@@ -49,7 +49,7 @@ woden.store({ // custom storeAdapter
     get: function( key, callback ) {
         callback( null, DS[key] ); // getting information
     },
-    set: function( key, value, callback ) { // setting values to store
+    set: function( key, value, callback, cachetimeMS ) { // setting values to store
         DS[ key ] = value; // value.body is a buffer 
         callback( );
     }
