@@ -21,7 +21,7 @@ proxycache.when( /www\.timeapi\.org\/utc\/now/, {
 } );
 
 proxycache.when( /www\.timeapi\.org\/pdt\/in two hours/, {
-    cacheTime: function( cacheEntry, req, proxyRes ) {
+    cacheTimeout: function( cacheEntry, req, proxyRes ) {
         if ( cacheEntry.body.length > 10000000 ) {
             return -1; // don't cache big responses
         }
@@ -45,12 +45,12 @@ proxycache.store({
     get: function( key, callback ) {
         callback( null, DS[ key ] );
     },
-    set: function( key, value, callback, cacheTime ) {
-        DS[ key ] = value;
-        if ( cacheTime > 0 ) {
+    set: function( options, callback ) {
+        DS[ options.key ] = options.value;
+        if ( options.timeout > 0 ) {
             setTimeout( function() {
-                delete DS[ key ];
-            }, cacheTime );
+                delete DS[ options.key ];
+            }, options.timeout );
         }
         callback();
     }

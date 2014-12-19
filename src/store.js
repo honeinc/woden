@@ -7,8 +7,8 @@ module.exports = {
     get: function( key, callback ) {
         callback( null, tinycache.get( key ) );
     },
-    set: function( key, value, time, callback ) {
-        tinycache.put( key, value, time );
+    set: function( options, callback ) {
+        tinycache.put( options.key, options.value, options.timeout );
         callback( );
     }
 };

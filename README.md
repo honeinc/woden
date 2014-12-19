@@ -28,7 +28,7 @@ woden.when( /google/, {
 });
 
 woden.when( /foo.org/, {
-    cacheTime: function( cacheEntry, req, proxyRes ) {
+    cacheTimeout: function( cacheEntry, req, proxyRes ) {
         if ( cacheEntry.body.length > 10000000 ) {
             return -1; // don't cache big responses
         }
