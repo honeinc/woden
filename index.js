@@ -107,19 +107,19 @@ Woden.prototype._onRequest = function( req, res ) {
         arg = req.url.split( '?' ),
         path = arg.shift( ),
         query = qs.parse( arg.pop( ) ),
-        url = query.$url || '',
+        target = query.$url || '',
         key,
         self = this;
 
     delete query.$url;
-    req.url = path + ( Object.keys( query ).length ? ( '?' + qs.stringify( query ) ) : '' );
-    req._url = url;
+    req.url = ( path !== '/' ? path : '' ) + ( Object.keys( query ).length ? ( '?' + qs.stringify( query ) ) : '' );
+    req._target = target;
     
-    var settings = this._getSettings( url + req.url );
+    var settings = this._getSettings( req._target + req.url );
     req._settings = settings;
 
     query = sortObject( query ); 
-    key = settings.getKey( url + req.url, query );
+    key = settings.getKey( req._target + req.url, query );
 
     // right now only get request are supported
     if ( req.method.toLowerCase() !== 'get' ) {
@@ -132,7 +132,7 @@ Woden.prototype._onRequest = function( req, res ) {
     }
 
     // test for a proper url
-    if ( !/^(http|https):\/\//.test( url ) ) {
+    if ( !/^(http|https):\/\//.test( req._target ) ) {
         res.writeHead( 400 );
         res.write( '$url query param requires a valid url to use proxy cache' );
         res.end( );
@@ -159,7 +159,8 @@ Woden.prototype._onRequest = function( req, res ) {
         }
 
         self.proxy.web( req, res, { 
-            target: url 
+            target: req._target,
+            toProxy: req.url.length ? false : true
         } );
     } );
 
@@ -185,7 +186,7 @@ Woden.prototype._cacheResponse = function( proxyRes, req ) {
         query = sortObject( qs.parse( arg.pop( ) ) ),
         headers = proxyRes.headers,
         settings = req._settings,
-        key = settings.getKey( req._url + req.url, query ),
+        key = settings.getKey( req._target + req.url, query ),
         self = this,
         arr = [];
 
@@ -267,7 +268,7 @@ Woden.prototype._onProxyReq = function( proxyReq, req ) {
     }
     
     if ( !headers.host ) {
-        var parsed = urlParse( req._url, false, true );
+        var parsed = urlParse( req._target, false, true );
         proxyReq.setHeader( 'host', parsed.host );
     }
 };
