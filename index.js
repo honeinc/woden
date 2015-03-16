@@ -121,6 +121,13 @@ Woden.prototype._onRequest = function( req, res ) {
     query = sortObject( query ); 
     key = settings.getKey( req._target + req.url, query );
 
+    if ( req.method.toLowerCase() === 'options' ) {
+        if ( self.options.onOptions ) {
+            self.options.onOptions( req, res );
+            return;
+        }
+    }
+    
     // right now only get request are supported
     if ( req.method.toLowerCase() !== 'get' ) {
         res.writeHead( 501 );

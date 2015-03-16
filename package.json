@@ -1,6 +1,6 @@
 {
   "name": "woden",
-  "version": "2.0.1",
+  "version": "3.1.0",
   "description": "A small, simple proxy server module with some nice controls for caching.",
   "main": "index.js",
   "scripts": {
@@ -11,7 +11,11 @@
   "keywords": [
     "node"
   ],
-  "author": "Jacob Lowe",
+  "contributors": [ {
+    "name": "Jacob Lowe",
+    "url": "https://github.com/jcblw"
+  } ],
+  "author": "Andy Burke <aburke@bitflood.org>",
   "license": "MIT",
   "dependencies": {
     "http-proxy": "^1.7.0",
