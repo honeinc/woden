@@ -82,12 +82,12 @@ Woden.prototype.store = function( adapter ) {
 
 */
 
-Woden.prototype.listen = function( port ) {
+Woden.prototype.listen = function( port, ipaddress ) {
     port = port || 5050;
     if ( this.options.output ) {
         this.options.output.write( 'listening on port ' + port ); // assumes its a writable stream
     }
-    this.server.listen( port );
+    this.server.listen( port, ipaddress );
 };
 
 /*
