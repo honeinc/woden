@@ -114,11 +114,19 @@ Woden.prototype._onRequest = function( req, res ) {
     delete query.$url;
     req.url = ( path !== '/' ? path : '' ) + ( Object.keys( query ).length ? ( '?' + qs.stringify( query ) ) : '' );
     req._target = target;
-    
+
     var settings = this._getSettings( req._target + req.url );
     req._settings = settings;
 
-    query = sortObject( query ); 
+    if(settings.params && Object.keys( settings.params ).length) {
+        query = extend( true, {},
+            settings.params, query );
+
+        req.url += req.url.indexOf('?') > -1 ? '&' : '?';
+        req.url += qs.stringify( settings.params );
+    }
+
+    query = sortObject( query );
     key = settings.getKey( req._target + req.url, query );
 
     if ( req.method.toLowerCase() === 'options' ) {
