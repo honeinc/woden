@@ -1,6 +1,6 @@
 {
   "name": "woden",
-  "version": "3.1.0",
+  "version": "3.2.0",
   "description": "A small, simple proxy server module with some nice controls for caching.",
   "main": "index.js",
   "scripts": {
