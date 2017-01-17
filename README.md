@@ -26,7 +26,7 @@ woden.when( /google/, {
     },
     params: {
         'apiKey': 'myToken' // set additional url param when sending to proxy
-    }
+    },
     caching: false // don't cache responses from google
 });
 
