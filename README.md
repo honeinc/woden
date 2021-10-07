@@ -1,3 +1,9 @@
+# DEPRECATED REPO
+
+Note: this is a deprecated repo (Hone no longer exists as a company), the new main repo is:
+
+https://github.com/andyburke/woden
+
 # Woden [![Build Status](https://travis-ci.org/honeinc/woden.svg?branch=master)](https://travis-ci.org/honeinc/woden)
 
 ![Woden](https://cloud.githubusercontent.com/assets/273857/5469053/e6c140a2-858b-11e4-97b1-ee4c1a39d352.png)
