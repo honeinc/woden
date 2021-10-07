@@ -41,6 +41,7 @@ function Woden( options ) {
     this.proxy.on( 'proxyRes', this.emit.bind( this, 'response' ) );
     this.proxy.on( 'proxyRes', this._cacheResponse.bind( this ) ); // optionally caches response
     this.proxy.on( 'proxyReq', this._onProxyReq.bind( this ) );
+    this.proxy.on( 'start', this._onProxyStart.bind( this ) );
     this.storageAdapter = require( './src/store' );
     this.proxy.on( 'error', this._onError.bind( this ) );
 }   
@@ -266,6 +267,19 @@ Woden.prototype._getSettings = function( url ) {
     }, settings );
 };
 
+
+/*
+    Woden::_onProxyStart - Private handler of request proxy start
+
+    params
+        req { Request } - node request object
+
+*/
+Woden.prototype._onProxyStart = function( req ) {
+    var parsed = urlParse( req._target, false, true );
+    req.headers.host = parsed.host;
+}
+
 /*
     Woden::_onProxyReq - Private handler of request pre proxy
 
@@ -281,11 +295,6 @@ Woden.prototype._onProxyReq = function( proxyReq, req ) {
     for ( var key in headers ) {
         proxyReq.setHeader( key, headers[ key ] );
     }
-    
-    if ( !headers.host ) {
-        var parsed = urlParse( req._target, false, true );
-        proxyReq.setHeader( 'host', parsed.host );
-    }
 };
 
 /*
@@ -296,8 +305,8 @@ Woden.prototype._onProxyReq = function( proxyReq, req ) {
 
 */
 
-Woden.prototype._onError = function( error ) {
-    this.emit( 'error', error );
+Woden.prototype._onError = function( error, req, res, url ) {
+    this.emit( 'error', error, req, res, url );
 };
 
 /*
